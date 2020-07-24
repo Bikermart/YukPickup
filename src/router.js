@@ -42,12 +42,18 @@ export default new Router({
         {
           path: '/dashboard',
           name: 'dashboard',
-          component: () => import(/* webpackChunkName: "demo" */ './views/Dashboard.vue')
+          component: () => import('./views/Dashboard.vue')
         },
         {
           path: '/product',
           name: 'Product',
-          component: () => import(/* webpackChunkName: "demo" */ './views/Tables.vue')
+          component: () => import('./views/produk/Tables.vue')
+        },
+
+        {
+          path: '/order/masuk',
+          name: "Order Masuk",
+          component: () => import('./views/orderMasuk/index.vue')
         }
       ]
     },

@@ -46,10 +46,10 @@ import axios from 'axios'
 export default {
     data() {
         return {
-            kategoriProduk: null,
-            totalProduk: null,
-            totalOrderan: null,
-            orderSelesai: null
+            kategoriProduk: 0,
+            totalProduk: 0,
+            totalOrderan: 0,
+            orderSelesai: 0
         }
     },
 
@@ -73,7 +73,6 @@ export default {
 
                     if(res.data.data.product.length > 0)
                         return this.totalProduk = res.data.data.product.length
-
                     else 
                         this.totalProduk = '0'
                 }).catch((err) => {
@@ -95,24 +94,43 @@ export default {
                      console.error(err);
                  })
 
-                 this.kategoriProduk = '0'
+                //  this.kategoriProduk = '0'
             } else if(params == 'orderan') {
                 //  url = ''
 
-                //  axios.get(url + key).then((res) => {
-                //     return this.totalProduk = res.data.total
-                //  })
-
-                return this.totalOrderan = '0'
+                axios({
+                    url: 'https://api.bikermart.co.id/v2/order/getOrderByApp',
+                    method: 'get',
+                    headers: {
+                        key: 'Bikermart#2020',
+                        email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                        token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                        app_id: localStorage.getItem('yukpickup_selected_app_id')
+                    }
+                }).then((res) => {
+                    this.totalOrderan = res.data.total
+                    console.log(res);
+                }).catch((err) => {
+                    console.error(err);
+                    this.totalOrderan = 0
+                })
                 
             } else if(params == 'orderanSelesai') {
-                //  url = ''
-
-                //  axios.get(url + key).then((res) => {
-                //     return this.totalProduk = res.data.total
-                //  })
-
-                return this.orderSelesai = '0'
+                axios({
+                    url: 'https://api.bikermart.co.id/v2/order/getOrderSelesaiByAppId',
+                    method: 'get',
+                    headers: {
+                        key: 'Bikermart#2020',
+                        email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                        token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                        app_id: localStorage.getItem('yukpickup_selected_app_id')
+                    }
+                }).then((res) => {
+                    this.orderSelesai = res.data.total
+                }).catch((err) => {
+                    this.orderSelesai = '0'
+                    console.log(err);
+                })
                 
             }
 

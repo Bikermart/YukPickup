@@ -39,10 +39,10 @@
                             <span>My profile</span>
                         </router-link>
                         <div class="dropdown-divider"></div>
-                        <router-link @click="logout()" to="/login" class="dropdown-item">
+                        <a @click="logout()" class="dropdown-item">
                             <i class="ni ni-user-run"></i>
                             <span>Logout</span>
-                        </router-link>
+                        </a>
                     </template>
                 </base-dropdown>
             </li>
@@ -96,6 +96,8 @@ import axios from 'axios'
         sessionStorage.removeItem('LoggedUserYukPickup_email')
         sessionStorage.removeItem('LoggedUserYukPickup_token')
         sessionStorage.removeItem('LoggedUserYukPickup_name')
+
+        this.$router.go('/login')
       },
 
       setSelectedApp() {

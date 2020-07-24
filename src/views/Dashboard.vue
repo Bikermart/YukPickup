@@ -8,7 +8,7 @@
 
     <div class="container">
       <div class="row">
-        <div class="col-lg-4 col-md-3 col-sm-12">
+        <div class="col-lg-4 col-md-3 col-sm-12 mb-3">
           <a href="#" data-toggle="modal" data-target="#newAppModal">
             <div class="card apps-card">
               <div class="card-body text-center">
@@ -20,7 +20,7 @@
           </a>
         </div>
 
-        <div v-for="(a, index) in allApp" :key="index" class="col-lg-4 col-md-3 col-sm-12">
+        <div v-for="(a, index) in allApp" :key="index" class="col-lg-4 col-md-3 col-sm-12 mb-3">
           <a @click="setSelectedApp(a.id)" href="#">
             <div class="card apps-card">
               <div class="card-body text-left">

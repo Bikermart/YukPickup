@@ -15,6 +15,7 @@
         />
 
         <sidebar-item v-if="selectedApp" :link="{name: 'Product', icon: 'ni ni-bullet-list-67 text-red', path: '/product'}"/>
+        <sidebar-item v-if="selectedApp" :link="{name: 'Order Masuk', icon: 'ni ni-delivery-fast text-red', path: '/order/masuk'}"/>
         <!-- <sidebar-item :link="{name: 'Login', icon: 'ni ni-key-25 text-info', path: '/login'}"/>
         <sidebar-item :link="{name: 'Register', icon: 'ni ni-circle-08 text-pink', path: '/register'}"/> -->
 

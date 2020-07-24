@@ -15,7 +15,7 @@
                 </div>
                 <div class="col text-right">
 
-                  <input class="form-control-sm mr-2 border-secondary" id="searchBar" v-model="searchBar"
+                  <input class="form-control-sm form-control-alternative border mr-2 border-secondary" id="searchBar" v-model="searchBar"
                     placeholder="Search Product" type="text">
 
                   <base-button data-toggle="modal" data-target="#modalImport" type="success" size="sm">import
