@@ -23,7 +23,7 @@
                                     </base-button>
 
                                     <download-csv name="Export All Order - YukPickup.csv" separator-excel='true'
-                                        class="btn btn-sm btn-success" :data="tableData">
+                                        class="btn btn-sm btn-success" :data="exportData">
                                         Export
                                     </download-csv>
 
@@ -258,7 +258,13 @@
                                     <p class="text-muted">
                                         <small>
                                             Total Pesanan : Rp.
-                                            {{editTrxData_detailItem_allPrice.reduce((a,b) => a+b, 0)}} 
+                                            {{editTrxData_detailItem_allPrice.reduce((a,b) => a+b, 0)}}
+
+                                            <br>
+
+                                            <span v-if="editTrxData_Status">
+                                                Status : {{editTrxData_Status}}
+                                            </span>
                                         </small>
                                     </p>
 
@@ -378,16 +384,16 @@
                                     <li>Unduh <a target="_blank"
                                             href="https://api.bikermart.co.id/assets/yukpickup/orderMasuk_Excel_Sample/orderMasuk.xlsx">template
                                             contoh import disini</a> </li> (template berupa xlsx belum berupa csv)
-                                    <li>Jika aplikasimu sudah memiliki orderan masuk, silahkan unduh export data
-                                        orderanmu
+                                    <li>Jika aplikasimu sudah memiliki orderan masuk, silahkan unduh
                                         <download-csv name="Export All Order - YukPickup.csv" separator-excel='true'
-                                            class="nav-link p-0 d-inline text-primary" :data="tableData">
-                                            disini
+                                            class="nav-link p-0 d-inline text-primary" :data="exportData">
+                                            export data orderanmu disini
                                         </download-csv>
                                     </li>
                                     <li>isi template tersebut dengan benar</li>
-                                    <li>Setelah selesai mengisi silahkan konversi excel tadi menjadi csv menggunakan <a
-                                            target="_blank" href="https://convertio.co/xlsx-csv/">tools ini</a> </li>
+                                    <li>Setelah selesai mengisi silahkan konversi excel tadi menjadi csv <a
+                                            target="_blank" href="https://convertio.co/xlsx-csv/">menggunakan tools
+                                            ini</a> </li>
                                     <li>Lalu import pada menu ini</li>
                                 </ol>
 
@@ -450,6 +456,7 @@
             return {
                 searchBar: null,
                 tableData: [],
+                exportData: [],
                 csvImport: [],
                 rincianTrxItem: [],
                 settingsBtn: false,
@@ -485,6 +492,8 @@
                 editTrxData_detailItem: [],
                 editTrxData_detailItem_allProduct: [],
                 editTrxData_detailItem_allPrice: [],
+
+                editTrxData_Status: null,
 
                 detailTrx: {
                     'trxId': null,
@@ -526,9 +535,56 @@
 
             editTrxItem(key, action) {
                 if (action == 'save') {
-
                     $('.submitEditTrx').prop('disabled', true)
                     $('.submitEditTrx img').attr('src', 'img/loading-white.gif')
+
+                    var buyer = {
+                        'trxId': this.editTrxData.trxId,
+                        'appId': this.editTrxData.appId,
+                        'buyerName': this.editTrxData.buyerName,
+                        'buyerPhone': this.editTrxData.buyerPhone,
+                        'buyerAddress': this.editTrxData.buyerAddress,
+                    }
+
+                    var item = this.editTrxData_detailItem
+
+                    // Kirim ke server berupa data Raw JSON
+
+                    // Buyer detail
+                    var FormData = require('form-data')
+                    var myData = new FormData()
+                    myData.set('buyerRaw', JSON.stringify(buyer))
+                    myData.set('itemRaw', JSON.stringify(item))
+
+                    axios({
+                        url: 'https://api.bikermart.co.id/v2/order/saveEditItemTrx',
+                        method: 'post',
+                        headers: {
+                            key: 'Bikermart#2020',
+                            email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                            token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                            app_id: localStorage.getItem('yukpickup_selected_app_id')
+                        },
+                        data: myData
+                    }).then((res) => {
+
+                        if (res.data.msg == 'success') {
+                            this.editTrxData_Status = res.data.msg
+                        } else {
+                            this.editTrxData_Status = 'Terjadi kegagalan, silahkan coba lagi'
+                        }
+
+                        setInterval(() => {
+                            this.editTrxData_Status = null
+                        }, 4000);
+
+                        $('.submitEditTrx').prop('disabled', false)
+                        $('.submitEditTrx img').attr('src', '')
+
+                    }).catch((err) => {
+                        console.error(err);
+                        this.editTrxData_Status = 'Terjadi kegagalan, silahkan coba lagi'
+                    })
 
 
                 } else {
@@ -654,8 +710,6 @@
                     }).then((res) => {
                         this.editTrxData_detailItem_allPrice.push(res.data.item.sell_price * this
                             .editTrxData_detailItem[i].qty)
-
-                        console.log(this.editTrxData_detailItem_allPrice);
                     })
                 }
             },
@@ -919,6 +973,21 @@
                     }
                 }).then((res) => {
                     this.tableData = res.data.order
+
+                    // Mengambil semua data transaksi lengkap untuk di ekspor
+                    axios({
+                        url: 'https://api.bikermart.co.id/v2/order/exportDataByTrxId',
+                        headers: {
+                            key: 'Bikermart#2020',
+                            email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                            token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                            app_id: localStorage.getItem('yukpickup_selected_app_id')
+                        }
+                    }).then((res) => {
+                        this.exportData = res.data.data
+                    }).catch((err) => {
+                        console.error(err);
+                    })
                 }).catch((err) => {
                     console.error(err);
                 })
