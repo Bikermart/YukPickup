@@ -70,18 +70,17 @@
                                                 <template>
                                                     <a @click="rincianTrx(p.trxId)" class="dropdown-item"
                                                         style="cursor: pointer">Rincian</a>
-                                                    <a class="dropdown-item" style="cursor: pointer">Edit</a>
-                                                    <a class="dropdown-item" style="cursor: pointer">Delete</a>
+                                                    <a class="dropdown-item" @click="editTrxItem(p.trxId, null)"
+                                                        style="cursor: pointer">Edit</a>
+                                                    <a class="dropdown-item" @click="deleteTrx(p.trxId, null)"
+                                                        style="cursor: pointer">Delete</a>
                                                 </template>
                                             </base-dropdown>
                                         </td>
-
                                     </tr>
                                 </tbody>
-
                             </table>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -105,7 +104,8 @@
                             Peringatan! {{alertError_rincianTrx}}
                         </div>
 
-                        <div class="alert py-2 alert-success" id="alertSuccess_rincianTrx" v-if="alertSuccess_rincianTrx">
+                        <div class="alert py-2 alert-success" id="alertSuccess_rincianTrx"
+                            v-if="alertSuccess_rincianTrx">
                             Berhasil! {{alertSuccess_rincianTrx}}
                         </div>
 
@@ -153,9 +153,10 @@
 
                             <div class="col-lg-8 col-sm-12 col-md-12 mt-2">
 
-                                <div v-if="animasiPesananDitandaiSelesai" style="height: 100%" class="justify-content-center text-center d-flex align-items-center">
+                                <div v-if="animasiPesananDitandaiSelesai" style="height: 100%"
+                                    class="justify-content-center text-center d-flex align-items-center">
                                     <div class="text-center mt-3">
-                                        <img src="img/check.png" width="90px" alt=""> 
+                                        <img src="img/check.png" width="90px" alt="">
                                         <h5 class="mt-3">Pesanan Selesai dan siap dikirim</h5>
                                     </div>
                                 </div>
@@ -190,7 +191,9 @@
                                                         {{i.qty}}
                                                     </td>
                                                     <td>
-                                                        <button @click="scanBarShow(i.productId)" :id="'scanBarShowBtnProductId' + i.productId" class="btn btn-sm scanBarShowBtnProduct">
+                                                        <button @click="scanBarShow(i.productId)"
+                                                            :id="'scanBarShowBtnProductId' + i.productId"
+                                                            class="btn btn-sm scanBarShowBtnProduct">
                                                             <i class="fas fa-barcode"></i>
                                                         </button>
                                                     </td>
@@ -210,9 +213,131 @@
                             @change="scanBarRead()" type="text" v-if="scanBar">
                         <button type="button" class="btn border" @click="scanCloseAction()"
                             v-if="scanClose">Cancel</button>
-                            <button class="btn btn-success w-100" @click="pesananSelesaiBtnAct()" v-if="pesananSelesaiBtn">Tandai Selesai</button>
+                        <button class="btn btn-success w-100" @click="pesananSelesaiBtnAct()"
+                            v-if="pesananSelesaiBtn">Tandai Selesai</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Modal -->
+        <div class="modal fade" id="modalEditTrx">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+
+                    <form @submit.prevent="editTrxItem(editTrxData.trxId, 'save')">
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">Edit Transaksi id {{editTrxData.trxId}} </h4>
+                            <button @click="dismisEditTrx()" type="button" class="close"
+                                data-dismiss="modal">&times;</button>
+                        </div>
+
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col mb-2">
+
+                                    <div class="text-muted mb-3">
+                                        Informasi Pembeli
+                                    </div>
+
+                                    <input required placeholder="Nama Pembeli" v-model="editTrxData.buyerName"
+                                        class="form-control border form-control-alternative mb-3" type="text">
+
+                                    <input required placeholder="No Hp Pembeli" v-model="editTrxData.buyerPhone"
+                                        class="form-control border form-control-alternative mb-3" type="text">
+
+                                    <textarea v-model="editTrxData.buyerAddress" placeholder="Alamat Pembeli" required
+                                        rows="5" class="form-control form-control-alternative border">
+
+                                </textarea>
+
+                                    <br>
+
+                                    <p class="text-muted">
+                                        <small>
+                                            Total Pesanan : Rp.
+                                            {{editTrxData_detailItem_allPrice.reduce((a,b) => a+b, 0)}} 
+                                        </small>
+                                    </p>
+
+                                </div>
+
+                                <div class="col-lg-8 col-sm-12 col-md-12" style="height: 60vh; overflow-y: auto">
+                                    <div class="text-muted mb-3">
+                                        Informasi Barang
+                                    </div>
+
+                                    <div v-for="(trx, index) in editTrxData_detailItem" :key="index">
+                                        <div class="row mb-3">
+                                            <div class="col-8">
+                                                <select name="product" v-model="trx.productId" class="custom-select">
+                                                    <!-- <option selected :value="trx.productId"> {{trx.productId}} -
+                                                        {{trx.productName}}</option> -->
+
+                                                    <option v-for="p in editTrxData_detailItem_allProduct"
+                                                        :key="p.product_id" :value="p.product_id">
+                                                        {{p.product_id}} - {{p.name}}
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col">
+                                                <input class="form-control form-control-alternative"
+                                                    @change="changePriceOnQtyInput()" placeholder="Qty"
+                                                    v-model="trx.qty" type="number">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button v-if="itemEditDelete_onEditTrx" @click="removeOneItemOneditItem()"
+                                        class="btn btn-sm ml-2 float-right mt-3 btn-success" type="button">
+                                        <i class="ni ni-fat-delete"></i>
+                                    </button>
+
+                                    <button v-if="itemEditDelete_onEditTrx" @click="addItemOneditItem()"
+                                        class="btn btn-sm float-right mt-3 btn-success" type="button">
+                                        <i class="ni ni-fat-add"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal footer -->
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success submitEditTrx">
+                                <img src="" width="20x" alt="">
+                                Save
+                            </button>
+                            <button type="button" class="btn border" @click="dismisEditTrx()"
+                                data-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- The Modal -->
+        <div class="modal fade" id="modalConfirmDelete">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        Are you sure want to delete all order item with transaction id {{deleteTrx_temp}} ?
                     </div>
 
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button class="btn btn-success submitDeleteBtn" @click="deleteTrx(deleteTrx_temp, 'delete')"
+                            type="button">
+                            <img src="" width="20x" alt="">
+                            Yes
+                        </button>
+                        <button type="button" class="btn border" data-dismiss="modal">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -293,13 +418,12 @@
                         </button>
                         <button type="button" class="btn border modalDismisBtn" data-dismiss="modal">Close</button>
                     </div>
-
                 </div>
             </div>
         </div>
-
     </div>
 </template>
+
 <script>
     import cardStatus from '@/components/cardStatus.vue';
     import axios from 'axios';
@@ -344,6 +468,24 @@
                 pesananSelesaiBtn: false,
                 animasiPesananDitandaiSelesai: false,
 
+                itemEditDelete_onEditTrx: false,
+
+                deleteTrx_temp: null,
+                editTrxData: {
+                    'trxId': null,
+                    'appId': null,
+                    'buyerName': null,
+                    'buyerPhone': null,
+                    'buyerAddress': null,
+                    'productId': null,
+                    'productName': null,
+                    'qty': null,
+                },
+
+                editTrxData_detailItem: [],
+                editTrxData_detailItem_allProduct: [],
+                editTrxData_detailItem_allPrice: [],
+
                 detailTrx: {
                     'trxId': null,
                     'appId': null,
@@ -382,6 +524,212 @@
 
         methods: {
 
+            editTrxItem(key, action) {
+                if (action == 'save') {
+
+                    $('.submitEditTrx').prop('disabled', true)
+                    $('.submitEditTrx img').attr('src', 'img/loading-white.gif')
+
+
+                } else {
+                    this.editTrxData_detailItem_allProduct = []
+                    this.editTrxData_detailItem = []
+                    this.editTrxData = []
+                    this.itemEditDelete_onEditTrx = false
+                    this.editTrxData_detailItem_allPrice = []
+
+                    $('.submitEditTrx').prop('disabled', false)
+                    $('.submitEditTrx img').attr('src', '')
+
+                    for (let i = 0; i < this.tableData.length; i++) {
+                        if (this.tableData[i].trxId == key) {
+                            this.editTrxData = this.tableData[i]
+                        }
+                    }
+
+                    axios({
+                        url: 'https://api.bikermart.co.id/v2/order/getOrderIdTrx',
+                        headers: {
+                            key: 'Bikermart#2020',
+                            email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                            token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                            app_id: localStorage.getItem('yukpickup_selected_app_id')
+                        },
+                        params: {
+                            trxId: key
+                        }
+                    }).then((res) => {
+                        this.editTrxData_detailItem = res.data.item
+
+                        // Menambahkan semua harga item barang
+                        for (let i = 0; i < this.editTrxData_detailItem.length; i++) {
+                            axios({
+                                url: 'https://api.bikermart.co.id/v2/order/getProductPriceBySKU',
+                                headers: {
+                                    key: 'Bikermart#2020',
+                                    email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                                    token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                                    app_id: localStorage.getItem('yukpickup_selected_app_id')
+                                },
+                                params: {
+                                    sku: this.editTrxData_detailItem[i].productId
+                                }
+                            }).then((res) => {
+                                this.editTrxData_detailItem_allPrice.push(res.data.item.sell_price *
+                                    this
+                                    .editTrxData_detailItem[i].qty)
+                            })
+                        }
+                    }).catch((err) => {
+                        console.error(err);
+                    })
+
+                    // Mendapatkan semua produk untuk di loop pada tag html select
+
+                    axios({
+                        url: 'https://api.bikermart.co.id/v1/product/getProductByIdApp',
+                        params: {
+                            key: 'Bikermart#2020',
+                            email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                            token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                            app_id: localStorage.getItem('yukpickup_selected_app_id')
+                        },
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    }).then((res) => {
+                        this.editTrxData_detailItem_allProduct = res.data.data.product
+                        this.itemEditDelete_onEditTrx = true
+                    })
+
+                    $('#modalEditTrx').modal('show')
+                }
+            },
+
+            changePriceOnQtyInput() {
+                this.editTrxData_detailItem_allPrice = []
+
+                // Menambahkan semua harga item barang
+                for (let i = 0; i < this.editTrxData_detailItem.length; i++) {
+                    axios({
+                        url: 'https://api.bikermart.co.id/v2/order/getProductPriceBySKU',
+                        headers: {
+                            key: 'Bikermart#2020',
+                            email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                            token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                            app_id: localStorage.getItem('yukpickup_selected_app_id')
+                        },
+                        params: {
+                            sku: this.editTrxData_detailItem[i].productId
+                        }
+                    }).then((res) => {
+                        this.editTrxData_detailItem_allPrice.push(res.data.item.sell_price * this
+                            .editTrxData_detailItem[i].qty)
+                    })
+                }
+            },
+
+            addItemOneditItem() {
+                this.editTrxData_detailItem.push({
+                    productId: '',
+                    productName: '',
+                    qty: '0'
+                })
+
+                this.editTrxData_detailItem_allPrice = []
+
+                // Menambahkan semua harga item barang
+                for (let i = 0; i < this.editTrxData_detailItem.length; i++) {
+                    axios({
+                        url: 'https://api.bikermart.co.id/v2/order/getProductPriceBySKU',
+                        headers: {
+                            key: 'Bikermart#2020',
+                            email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                            token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                            app_id: localStorage.getItem('yukpickup_selected_app_id')
+                        },
+                        params: {
+                            sku: this.editTrxData_detailItem[i].productId
+                        }
+                    }).then((res) => {
+                        this.editTrxData_detailItem_allPrice.push(res.data.item.sell_price * this
+                            .editTrxData_detailItem[i].qty)
+
+                        console.log(this.editTrxData_detailItem_allPrice);
+                    })
+                }
+            },
+
+            dismisEditTrx() {
+                this.editTrxData_detailItem_allProduct = []
+                this.editTrxData_detailItem = []
+                this.editTrxData_detailItem = []
+
+                $('.submitEditTrx').prop('disabled', false)
+                $('.submitEditTrx img').attr('src', '')
+            },
+
+            removeOneItemOneditItem() {
+                this.editTrxData_detailItem.pop()
+
+                this.editTrxData_detailItem_allPrice = []
+
+                // Menambahkan semua harga item barang
+                for (let i = 0; i < this.editTrxData_detailItem.length; i++) {
+                    axios({
+                        url: 'https://api.bikermart.co.id/v2/order/getProductPriceBySKU',
+                        headers: {
+                            key: 'Bikermart#2020',
+                            email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                            token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                            app_id: localStorage.getItem('yukpickup_selected_app_id')
+                        },
+                        params: {
+                            sku: this.editTrxData_detailItem[i].productId
+                        }
+                    }).then((res) => {
+                        this.editTrxData_detailItem_allPrice.push(res.data.item.sell_price * this
+                            .editTrxData_detailItem[i].qty)
+                    })
+                }
+            },
+
+            deleteTrx(key, action) {
+                $('.submitDeleteBtn img').hide()
+                if (action == 'delete') {
+                    $('.submitDeleteBtn').prop('disabled', true)
+                    $('.submitDeleteBtn img').attr('src', 'img/loading-white.gif')
+                    $('.submitDeleteBtn img').show()
+                    axios({
+                        url: 'https://api.bikermart.co.id/v2/order/deleteOrderByIdTrx',
+                        params: {
+                            trxId: key
+                        },
+                        headers: {
+                            key: 'Bikermart#2020',
+                            email: sessionStorage.getItem('LoggedUserYukPickup_email'),
+                            token: sessionStorage.getItem('LoggedUserYukPickup_token'),
+                            app_id: localStorage.getItem('yukpickup_selected_app_id')
+                        }
+                    }).then((res) => {
+                        console.log(res.data);
+                        $('.submitDeleteBtn').prop('disabled', false)
+                        $('#modalConfirmDelete').modal('hide')
+                        $('.submitDeleteBtn img').hide()
+                        $('.submitDeleteBtn img').attr('src', '')
+                        this.getAllOrder()
+                    }).catch((err) => {
+                        console.error(err);
+                        $('.submitDeleteBtn').prop('disabled', false)
+                        $('.submitDeleteBtn img').attr('src', '')
+                        $('.submitDeleteBtn img').hide()
+                    })
+                } else {
+                    this.deleteTrx_temp = key
+                    $('#modalConfirmDelete').modal('show')
+                }
+            },
+
             scanBarShow(params) {
                 // console.log(params);
                 this.temp_scan = params
@@ -405,15 +753,15 @@
                     $('#scanBarShowBtnProductId' + this.temp_scan + ' i').removeClass('fas fa-barcode');
                     $('#scanBarShowBtnProductId' + this.temp_scan + ' i').addClass('ni ni-check-bold text-success');
 
-                    var all_html = $(".scanBarShowBtnProduct i").map(function() {
-                        if($(this).attr('class') == 'ni ni-check-bold text-success')
+                    var all_html = $(".scanBarShowBtnProduct i").map(function () {
+                        if ($(this).attr('class') == 'ni ni-check-bold text-success')
                             return $(this).attr('class');
-                        else 
+                        else
                             return false
                     }).get();
 
                     for (let i = 0; i < all_html.length; i++) {
-                        if(all_html[i] == 'ni ni-check-bold text-success' && all_html.indexOf(false) < 0) {
+                        if (all_html[i] == 'ni ni-check-bold text-success' && all_html.indexOf(false) < 0) {
                             this.pesananSelesaiBtn = true
                             $('#modalRincianTrx .close').hide();
                         } else {
@@ -447,7 +795,7 @@
                         trxId: this.detailTrx.trxId
                     }
                 }).then((res) => {
-                    if(res.data.status == 'success') {
+                    if (res.data.status == 'success') {
                         console.log('Berhasil menyimpan orderan');
                         this.animasiPesananDitandaiSelesai = true
                         this.infoItem = false
@@ -571,15 +919,18 @@
                     }
                 }).then((res) => {
                     this.tableData = res.data.order
+                }).catch((err) => {
+                    console.error(err);
                 })
             }
         },
         mounted() {
             this.getAllOrder()
 
-            $('#modalRincianTrx .close').click(function() {
+            $('#modalRincianTrx .close').click(function () {
                 this.temp_scan = null
                 this.rincianTrxItem = []
+                this.getAllOrder()
             })
 
             $(document).ready(function () {

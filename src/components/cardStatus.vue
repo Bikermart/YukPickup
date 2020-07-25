@@ -109,7 +109,7 @@ export default {
                     }
                 }).then((res) => {
                     this.totalOrderan = res.data.total
-                    console.log(res);
+                    // console.log(res);
                 }).catch((err) => {
                     console.error(err);
                     this.totalOrderan = 0
